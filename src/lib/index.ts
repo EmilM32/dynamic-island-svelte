@@ -1,3 +1,4 @@
+export { Island, RollingDigits } from './island/index.js';
 export {
 	DEFAULT_DAMPING,
 	DEFAULT_FADE,
@@ -5,9 +6,6 @@ export {
 	DEFAULT_STIFFNESS,
 	IDLE_BOX,
 	ISLAND_STATES,
-	Island,
-	RollingDigits,
-	islandSizes,
-	sameBox
+	islandSizes
 } from './island/index.js';
-export type { IslandBox, IslandStateId } from './island/index.js';
+export type { IslandBox, IslandProps, IslandStateId, RollingDigitsProps } from './island/index.js';
