@@ -1,6 +1,6 @@
 {
 	"name": "dynamic-island-svelte",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "A Dynamic Island-style surface for Svelte 5. One black pill, one spring, and the states you write.",
 	"license": "MIT",
 	"type": "module",
@@ -26,7 +26,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
-	"files": ["dist", "docs/demo.png", "!dist/**/*.test.*", "!dist/**/*.spec.*"],
+	"files": ["dist", "docs/demo.png", "CHANGELOG.md", "!dist/**/*.test.*", "!dist/**/*.spec.*"],
 	"sideEffects": ["**/*.css"],
 	"svelte": "./dist/index.js",
 	"types": "./dist/index.d.ts",
