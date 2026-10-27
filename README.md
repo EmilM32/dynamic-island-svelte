@@ -81,7 +81,8 @@ Keep the variable you pass out of the name `state` — a local called `state` co
 | `fade` | `200` | Content crossfade, in milliseconds. Exit is shorter; enter waits a beat. |
 | `notificationDuration` | `3400` | Milliseconds before `oncollapse` when `state` is `'notification'`. |
 | `sizes` | built in | Partial override of `{ width, height, radius }` per state. |
-| `oncollapse` | — | Escape, a press outside, or the end of an alert. |
+| `label` | `'Island'` | Accessible name of the island region. |
+| `oncollapse` | — | Escape, a press outside, or the end of an alert. Ignored when another handler already called `preventDefault()`. |
 | `idle`, `navigation`, `music`, `notification`, `timer` | — | Snippets. A missing snippet renders nothing for that state. |
 
 Target sizes shrink to the viewport (`viewport - 36`, never under 220). Idle stays `118 × 40`. Pass `sizes` when a snippet needs a different box. The snippet is centered in a layer of that exact size and clipped by the shell.
