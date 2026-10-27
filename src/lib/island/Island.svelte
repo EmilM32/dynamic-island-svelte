@@ -14,7 +14,7 @@
 		type IslandStateId
 	} from './types.js';
 
-	type Props = {
+	export type IslandProps = {
 		/** Which box the shell is morphing toward. */
 		state: IslandStateId;
 		/** Svelte spring stiffness, 0–1. Higher is snappier. Read live, including mid-gesture. */
@@ -49,7 +49,7 @@
 		music,
 		notification,
 		timer
-	}: Props = $props();
+	}: IslandProps = $props();
 
 	// Constant until after hydration so the server and the first client paint match.
 	let viewport = $state(1280);

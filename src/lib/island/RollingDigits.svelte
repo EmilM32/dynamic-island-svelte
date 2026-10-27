@@ -3,14 +3,14 @@
 	import { Spring, prefersReducedMotion } from 'svelte/motion';
 	import { DEFAULT_DAMPING, DEFAULT_STIFFNESS } from './types.js';
 
-	type Props = {
+	export type RollingDigitsProps = {
 		/** Integer digit 0–9. Values wrap, and 9 → 0 rolls forward. */
 		value: number;
 		stiffness?: number;
 		damping?: number;
 	};
 
-	let { value, stiffness = DEFAULT_STIFFNESS, damping = DEFAULT_DAMPING }: Props = $props();
+	let { value, stiffness = DEFAULT_STIFFNESS, damping = DEFAULT_DAMPING }: RollingDigitsProps = $props();
 
 	const initial = untrack(() => normalize(value));
 

@@ -12,7 +12,7 @@ export const chapters = [
 	{
 		id: 'api',
 		label: 'API',
-		body: 'Pass a state in. Listen for oncollapse and onactivate. Override a size when your content needs a different box. The folder to lift into a package later is src/lib/island — the faces on this page are just the demo.'
+		body: 'Pass a state in. Listen for oncollapse. Override a size when your content needs a different box. The package is dynamic-island-svelte — the faces on this page are just the demo.'
 	},
 	{
 		id: 'keys',
@@ -22,7 +22,7 @@ export const chapters = [
 	{
 		id: 'use',
 		label: 'Use',
-		body: 'Ship it in a product or sell the kit. Add your own license before you publish. Reduced motion snaps the spring and drops the blur, so the same component stays usable when the animation should not play.'
+		body: 'Ship it in a product. The package is MIT. Reduced motion snaps the spring and drops the blur, so the same component stays usable when the animation should not play.'
 	}
 ] as const;
 

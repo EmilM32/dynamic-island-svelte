@@ -1,6 +1,5 @@
 <script lang="ts">
-	import RollingDigits from '../island/RollingDigits.svelte';
-	import { DEFAULT_DAMPING, DEFAULT_STIFFNESS } from '../island/types.js';
+	import { DEFAULT_DAMPING, DEFAULT_STIFFNESS, RollingDigits } from '#lib';
 
 	type Props = {
 		active: boolean;
