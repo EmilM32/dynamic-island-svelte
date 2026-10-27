@@ -27,6 +27,8 @@
 		notificationDuration?: number;
 		/** Replace any of the built-in target boxes. */
 		sizes?: Partial<Record<IslandStateId, Partial<IslandBox>>>;
+		/** Accessible name of the island region. */
+		label?: string;
 		/** Escape, outside press, or the notification timer. */
 		oncollapse?: () => void;
 		idle?: Snippet;
@@ -43,6 +45,7 @@
 		fade = DEFAULT_FADE,
 		notificationDuration = DEFAULT_NOTIFICATION_MS,
 		sizes,
+		label = 'Island',
 		oncollapse,
 		idle,
 		navigation,
@@ -115,13 +118,13 @@
 	});
 
 	function onKey(event: KeyboardEvent) {
-		if (event.key !== 'Escape' || phase === 'idle') return;
+		if (event.defaultPrevented || event.key !== 'Escape' || phase === 'idle') return;
 		event.preventDefault();
 		oncollapse?.();
 	}
 
 	function onPointerDown(event: PointerEvent) {
-		if (phase === 'idle') return;
+		if (event.defaultPrevented || phase === 'idle') return;
 		const target = event.target;
 		if (!(target instanceof Element)) return;
 		if (target.closest('[data-island-root], [data-island-keep]')) return;
@@ -142,7 +145,7 @@
 		style:--exit="{exitMs}ms"
 		style:--enter-delay="{enterDelayMs}ms"
 		role="region"
-		aria-label="Island"
+		aria-label={label}
 	>
 		{#each layers as layer (layer.id)}
 			{#if layer.body}
@@ -189,7 +192,6 @@
 			inset 0 0 0 1px rgba(255, 255, 255, 0.06),
 			0 18px 50px rgba(0, 0, 0, 0.28),
 			0 2px 8px rgba(0, 0, 0, 0.2);
-		will-change: width, height, border-radius;
 		user-select: none;
 		-webkit-font-smoothing: antialiased;
 	}

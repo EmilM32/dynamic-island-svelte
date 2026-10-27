@@ -167,6 +167,7 @@
 	}
 
 	.meta {
+		grid-column: 2;
 		min-width: 0;
 	}
 
@@ -191,6 +192,7 @@
 	}
 
 	.play {
+		grid-column: 3;
 		grid-row: 1 / span 2;
 		display: grid;
 		width: 36px;
