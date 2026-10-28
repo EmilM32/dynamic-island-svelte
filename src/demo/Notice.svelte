@@ -109,8 +109,18 @@
 	}
 
 	.meter.run {
-		transform: scaleX(0);
-		transition: transform var(--hold) linear;
+		animation: drain var(--hold) linear forwards;
+	}
+
+	/* The island pauses its timer on hover, focus, and hidden tabs. */
+	:global([data-island-root][data-paused]) .meter {
+		animation-play-state: paused;
+	}
+
+	@keyframes drain {
+		to {
+			transform: scaleX(0);
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

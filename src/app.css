@@ -88,6 +88,12 @@ button {
 	border: 0;
 }
 
+:root[data-switching] *,
+:root[data-switching] *::before,
+:root[data-switching] *::after {
+	transition: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	body {
 		transition: none;

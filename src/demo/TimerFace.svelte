@@ -23,7 +23,8 @@
 	});
 
 	$effect(() => {
-		if (!running) return;
+		// Hidden layers skip the frame loop; the clock catches up when shown again.
+		if (!running || !active) return;
 		const origin = startedAt;
 		const base = accumulated;
 		let frame = 0;
@@ -180,7 +181,33 @@
 		cursor: pointer;
 	}
 
-	.reset:hover {
-		color: #f6f3ee;
+	@media (hover: hover) and (pointer: fine) {
+		.reset:hover {
+			color: #f6f3ee;
+		}
+	}
+
+	/* Hit areas. The pause area stops where the reset area starts. */
+	.pause,
+	.reset {
+		position: relative;
+	}
+
+	.pause::after,
+	.reset::after {
+		content: '';
+		position: absolute;
+	}
+
+	.pause::after {
+		width: 44px;
+		height: 40px;
+		left: 50%;
+		top: 50%;
+		translate: -50% -50%;
+	}
+
+	.reset::after {
+		inset: -4px -8px -10px;
 	}
 </style>
