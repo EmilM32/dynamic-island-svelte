@@ -1,6 +1,6 @@
 {
 	"name": "dynamic-island-svelte",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "A Dynamic Island-style surface for Svelte 5. One black pill, one spring, and the states you write.",
 	"license": "MIT",
 	"type": "module",

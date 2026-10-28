@@ -102,9 +102,11 @@
 		transition: background-color 160ms ease, color 160ms ease;
 	}
 
-	.item:hover {
-		background: rgba(255, 255, 255, 0.08);
-		color: #f6f3ee;
+	@media (hover: hover) and (pointer: fine) {
+		.item:hover {
+			background: rgba(255, 255, 255, 0.08);
+			color: #f6f3ee;
+		}
 	}
 
 	.item[aria-current='page'] {

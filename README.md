@@ -79,7 +79,7 @@ Keep the variable you pass out of the name `state` — a local called `state` co
 | `stiffness` | `0.17` | Svelte spring stiffness, clamped to `0–1`. Higher is faster. |
 | `damping` | `0.74` | Svelte spring damping, clamped to `0–1`. Lower overshoots. |
 | `fade` | `200` | Content crossfade, in milliseconds. Exit is shorter; enter waits a beat. |
-| `notificationDuration` | `3400` | Milliseconds before `oncollapse` when `state` is `'notification'`. |
+| `notificationDuration` | `3400` | Milliseconds before `oncollapse` when `state` is `'notification'`. Paused while the pointer is over the island, focus is inside it, or the tab is hidden. |
 | `sizes` | built in | Partial override of `{ width, height, radius }` per state. |
 | `label` | `'Island'` | Accessible name of the island region. |
 | `oncollapse` | — | Escape, a press outside, or the end of an alert. Ignored when another handler already called `preventDefault()`. |
@@ -93,6 +93,32 @@ Target sizes shrink to the viewport (`viewport - 36`, never under 220). Idle sta
 	sizes={{ music: { width: 400, height: 120, radius: 32 } }}
 	oncollapse={() => (phase = 'idle')}
 />
+```
+
+### Styling
+
+The shell reads these custom properties. Set them on any ancestor.
+
+| Property | Default |
+| --- | --- |
+| `--island-bg` | `#090909` |
+| `--island-fg` | `#f6f3ee` |
+| `--island-shadow` | a 1px inner highlight and two soft drop shadows |
+| `--island-z` | `30` |
+| `--island-top` | `14px`, or the top safe-area inset if that is larger |
+
+The safe-area inset is only non-zero when the page sets `viewport-fit=cover`:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+```
+
+While a notification's timer is paused, the shell carries `data-paused`. A progress bar inside the snippet can follow it:
+
+```css
+:global([data-island-root][data-paused]) .meter {
+	animation-play-state: paused;
+}
 ```
 
 ### `RollingDigits`
@@ -109,6 +135,7 @@ Target sizes shrink to the viewport (`viewport - 36`, never under 220). Idle sta
 - Content layers sit at the **target** size. Opacity, a 4px blur, and an 8px rise run on `fade`.
 - `prefers-reduced-motion: reduce` snaps the spring and drops the blur and the rise. An alert still closes on its timer.
 - Outside presses call `oncollapse`. Anything marked `data-island-keep` does not.
+- Hidden layers are `inert`. If focus was inside the layer that just closed, it goes back to the last element focused outside the island, unless your own handler already moved it.
 - Very low damping with high stiffness can overshoot the content for a moment. That is the spring.
 - The shell animates `width` and `height`. It is one layout write per frame, not a transform-only animation.
 

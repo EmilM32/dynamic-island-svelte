@@ -23,7 +23,7 @@
 		damping?: number;
 		/** Content crossfade, in milliseconds. The shell ignores this and uses the spring. */
 		fade?: number;
-		/** How long a notification stays open before `oncollapse`. */
+		/** How long a notification stays open before `oncollapse`. Paused while hovered, focused, or in a hidden tab. */
 		notificationDuration?: number;
 		/** Replace any of the built-in target boxes. */
 		sizes?: Partial<Record<IslandStateId, Partial<IslandBox>>>;
@@ -70,6 +70,17 @@
 
 	let shell: HTMLDivElement | undefined = $state();
 
+	// Where focus goes back to when the layer holding it is hidden.
+	let returnTo: HTMLElement | null = null;
+	let focusLost = false;
+
+	let hovering = $state(false);
+	let focusWithin = $state(false);
+	let tabHidden = $state(false);
+	const paused = $derived(hovering || focusWithin || tabHidden);
+	let holdLeft = 0;
+	let holdFor: number | null = null;
+
 	const layers = $derived([
 		{ id: 'idle' as const, body: idle },
 		{ id: 'navigation' as const, body: navigation },
@@ -110,12 +121,61 @@
 		node.style.borderRadius = `${current.radius.toFixed(2)}px`;
 	});
 
-	$effect(() => {
-		if (phase !== 'notification') return;
-		if (notificationDuration <= 0) return;
-		const id = setTimeout(() => oncollapse?.(), notificationDuration);
-		return () => clearTimeout(id);
+	// Runs before the DOM update, while the outgoing layer is not inert yet.
+	$effect.pre(() => {
+		const next = phase;
+		const active = document.activeElement;
+		if (!shell || !(active instanceof Element) || !shell.contains(active)) return;
+		focusLost = active.closest('[data-island-layer]')?.getAttribute('data-island-layer') !== next;
 	});
+
+	// `inert` drops focus to <body>. Give it back to where it came from, unless
+	// the consumer already moved it somewhere else.
+	$effect(() => {
+		void phase;
+		if (!focusLost) return;
+		focusLost = false;
+		const frame = requestAnimationFrame(() => {
+			const active = document.activeElement;
+			const stranded = !active || active === document.body || !!active.closest('[data-island-root] [inert]');
+			if (stranded && returnTo?.isConnected) returnTo.focus({ preventScroll: true });
+		});
+		return () => cancelAnimationFrame(frame);
+	});
+
+	$effect(() => {
+		if (phase !== 'notification' || notificationDuration <= 0) {
+			holdFor = null;
+			return;
+		}
+		if (holdFor !== notificationDuration) {
+			holdFor = notificationDuration;
+			holdLeft = notificationDuration;
+		}
+		if (paused) return;
+		const started = performance.now();
+		const id = setTimeout(() => oncollapse?.(), holdLeft);
+		return () => {
+			clearTimeout(id);
+			holdLeft -= performance.now() - started;
+		};
+	});
+
+	function onFocusIn(event: FocusEvent) {
+		const target = event.target;
+		if (!(target instanceof HTMLElement) || !shell) return;
+		if (shell.contains(target)) {
+			focusWithin = true;
+		} else {
+			returnTo = target;
+		}
+	}
+
+	function onFocusOut(event: FocusEvent) {
+		if (!shell || !shell.contains(event.target as Node)) return;
+		const next = event.relatedTarget;
+		focusWithin = next instanceof Node && shell.contains(next);
+	}
 
 	function onKey(event: KeyboardEvent) {
 		if (event.defaultPrevented || event.key !== 'Escape' || phase === 'idle') return;
@@ -133,7 +193,12 @@
 </script>
 
 <svelte:window onkeydown={onKey} onresize={() => (viewport = window.innerWidth)} />
-<svelte:document onpointerdown={onPointerDown} />
+<svelte:document
+	onpointerdown={onPointerDown}
+	onfocusin={onFocusIn}
+	onfocusout={onFocusOut}
+	onvisibilitychange={() => (tabHidden = document.visibilityState === 'hidden')}
+/>
 
 <div class="anchor">
 	<div
@@ -141,17 +206,21 @@
 		class="shell"
 		data-island-root
 		data-state={phase}
+		data-paused={phase === 'notification' && paused ? '' : undefined}
 		style:--fade="{fadeMs}ms"
 		style:--exit="{exitMs}ms"
 		style:--enter-delay="{enterDelayMs}ms"
 		role="region"
 		aria-label={label}
+		onpointerenter={(event) => (hovering = event.pointerType === 'mouse')}
+		onpointerleave={() => (hovering = false)}
 	>
 		{#each layers as layer (layer.id)}
 			{#if layer.body}
 				<!-- Target size, not the spring, so type does not reflow while the shell morphs. -->
 				<div
 					class={['layer', { on: phase === layer.id }]}
+					data-island-layer={layer.id}
 					style:width="{resolved[layer.id].width}px"
 					style:height="{resolved[layer.id].height}px"
 					inert={phase === layer.id ? undefined : true}
@@ -167,13 +236,13 @@
 <style>
 	.anchor {
 		position: fixed;
-		z-index: 30;
+		z-index: var(--island-z, 30);
 		top: 0;
 		left: 0;
 		right: 0;
 		display: flex;
 		justify-content: center;
-		padding-top: max(14px, env(safe-area-inset-top));
+		padding-top: max(var(--island-top, 14px), env(safe-area-inset-top));
 		pointer-events: none;
 	}
 
@@ -185,13 +254,15 @@
 		width: 118px;
 		height: 40px;
 		border-radius: 20px;
-		background: #090909;
-		color: #f6f3ee;
-		box-shadow:
+		background: var(--island-bg, #090909);
+		color: var(--island-fg, #f6f3ee);
+		box-shadow: var(
+			--island-shadow,
 			inset 0 1px 0 rgba(255, 255, 255, 0.16),
 			inset 0 0 0 1px rgba(255, 255, 255, 0.06),
 			0 18px 50px rgba(0, 0, 0, 0.28),
-			0 2px 8px rgba(0, 0, 0, 0.2);
+			0 2px 8px rgba(0, 0, 0, 0.2)
+		);
 		user-select: none;
 		-webkit-font-smoothing: antialiased;
 	}

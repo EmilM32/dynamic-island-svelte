@@ -73,7 +73,10 @@
 	function toggleTheme() {
 		const root = document.documentElement;
 		const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+		// Swap colors in one frame instead of fading every transition on the page.
+		root.dataset.switching = '';
 		root.dataset.theme = next;
+		requestAnimationFrame(() => requestAnimationFrame(() => delete root.dataset.switching));
 		localStorage.setItem('island-theme', next);
 	}
 </script>
@@ -100,7 +103,7 @@
 		/>
 	{/snippet}
 	{#snippet music()}
-		<MusicPlayer {playing} onplayingchange={(value) => (playing = value)} />
+		<MusicPlayer {playing} active={phase === 'music'} onplayingchange={(value) => (playing = value)} />
 	{/snippet}
 	{#snippet notification()}
 		<Notice active={phase === 'notification'} duration={hold} />
@@ -311,8 +314,15 @@
 		text-decoration: none;
 	}
 
-	.repo:hover {
-		color: var(--muted);
+	@media (hover: hover) and (pointer: fine) {
+		.repo:hover {
+			color: var(--muted);
+		}
+
+		.theme:hover,
+		.switcher button:hover {
+			background: var(--hover);
+		}
 	}
 
 	.repo:focus-visible {
@@ -374,6 +384,7 @@
 	}
 
 	.theme {
+		position: relative;
 		display: grid;
 		width: 36px;
 		height: 36px;
@@ -385,8 +396,14 @@
 		cursor: pointer;
 	}
 
-	.theme:hover {
-		background: var(--hover);
+	.theme::after {
+		content: '';
+		position: absolute;
+		width: 44px;
+		height: 44px;
+		left: 50%;
+		top: 50%;
+		translate: -50% -50%;
 	}
 
 	.theme:focus-visible,
@@ -429,10 +446,6 @@
 		cursor: pointer;
 		font-size: 14px;
 		font-weight: 500;
-	}
-
-	.switcher button:hover {
-		background: var(--hover);
 	}
 
 	.switcher button[aria-pressed='true'] {

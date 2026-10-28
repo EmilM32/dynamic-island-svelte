@@ -1,10 +1,11 @@
 <script lang="ts">
 	type Props = {
 		playing: boolean;
+		active?: boolean;
 		onplayingchange?: (playing: boolean) => void;
 	};
 
-	let { playing, onplayingchange }: Props = $props();
+	let { playing, active = true, onplayingchange }: Props = $props();
 
 	const DURATION = 134;
 	const START = 0.08;
@@ -37,21 +38,33 @@
 
 		const from = latest;
 		const start = performance.now();
+		const at = (now: number) => from + (now - start) / 1000 / DURATION;
+		let own = from;
 		let frame = 0;
 
-		const loop = (now: number) => {
-			const next = from + (now - start) / 1000 / DURATION;
-			if (next >= 1) {
+		const end = setTimeout(
+			() => {
 				publish(1);
 				onplayingchange?.(false);
-				return;
-			}
-			publish(next);
-			frame = requestAnimationFrame(loop);
-		};
+			},
+			(1 - from) * DURATION * 1000
+		);
 
-		frame = requestAnimationFrame(loop);
-		return () => cancelAnimationFrame(frame);
+		// Hidden layers skip the frame loop; the position is settled on teardown.
+		if (active) {
+			const loop = (now: number) => {
+				own = publish(at(now));
+				frame = requestAnimationFrame(loop);
+			};
+			frame = requestAnimationFrame(loop);
+		}
+
+		return () => {
+			clearTimeout(end);
+			cancelAnimationFrame(frame);
+			// A seek already moved `latest`; keep it.
+			if (latest === own) publish(at(performance.now()));
+		};
 	});
 
 	function toggle() {
@@ -204,6 +217,30 @@
 		background: #f6f3ee;
 		color: #111;
 		cursor: pointer;
+	}
+
+	.play,
+	.track {
+		position: relative;
+	}
+
+	.play::after,
+	.track::after {
+		content: '';
+		position: absolute;
+	}
+
+	.play::after {
+		width: 44px;
+		height: 44px;
+		left: 50%;
+		top: 50%;
+		translate: -50% -50%;
+	}
+
+	/* Grows upward only; the shell clips below. */
+	.track::after {
+		inset: -14px 0 -4px;
 	}
 
 	.play:focus-visible {
